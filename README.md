@@ -37,7 +37,7 @@ This generates a comprehensive visualization showing all metrics across the four
 
 The visualization generates a comprehensive dashboard showing memory QoS effectiveness:
 
-![Memory QoS Demonstration Results](docs/assets/sample_output.png)
+![Memory QoS Demonstration Results](demo_assets/sample_output.png)
 
 > **Note**: If the image doesn't display, copy your generated visualization from `logs/` to `docs/assets/sample_output.png` and commit it to the repository.
 

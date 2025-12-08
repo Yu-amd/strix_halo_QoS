@@ -1,0 +1,8 @@
+# Python Requirements for Strix Halo Memory QoS Demonstration
+
+# Core dependencies
+psutil>=5.9.0
+
+# Visualization dependencies
+matplotlib>=3.5.0
+seaborn>=0.12.0

@@ -1,0 +1,51 @@
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Build artifacts
+build/
+*.o
+*.a
+*.so
+*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Demo assets (large files)
+demo_assets/*.mp4
+demo_assets/*.wav
+demo_assets/*.m4a
+demo_assets/*.avi
+demo_assets/*.mov
+
+# Test projects (can be large)
+test-projects/*/
+
+# Keep directory structure
+!demo_assets/.gitkeep
+!test-projects/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+

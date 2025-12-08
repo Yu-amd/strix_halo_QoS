@@ -37,9 +37,11 @@ This generates a comprehensive visualization showing all metrics across the four
 
 The visualization generates a comprehensive dashboard showing memory QoS effectiveness:
 
-![Memory QoS Demonstration Results](logs/memory_qos_comprehensive_memory_qos_metrics_20251208_131202.png)
+![Memory QoS Demonstration Results](docs/assets/sample_output.png)
 
-*Example visualization showing memory availability, retention, CPU usage, and other key metrics across all four phases.*
+> **Note**: If the image doesn't display, copy your generated visualization from `logs/` to `docs/assets/sample_output.png` and commit it to the repository.
+
+*Example visualization showing memory availability, retention, CPU usage, and other key metrics across all four phases. The image is generated in the `logs/` directory after running the visualization script.*
 
 ## What This Demo Shows
 

@@ -87,7 +87,7 @@ Strix Halo's memory QoS ensures that:
 - Foreground work remains interactive even under heavy AI load
 - Memory availability is maintained (no starvation)
 
-This is what enables the "always-on AI PC" experience - AI assistants that don't require you to turn them off when you're doing real work.
+This is what enables the "always-on AI PC" experience - **AI assistants that don't require you to turn them off when you're doing real work**.
 
 ## Documentation
 

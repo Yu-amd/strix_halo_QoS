@@ -102,11 +102,6 @@ This is what enables the "always-on AI PC" experience - AI assistants that don't
 ### Detailed Guides
 
 - **[Memory QoS Demo Documentation](docs/MEMORY_QOS_DEMO.md)**: Complete guide to the demo, workloads, and metrics
-- **[Visualization Guide](docs/VISUALIZATION_GUIDE.md)**: Explanation of all graphs and metrics in the visualization
-- **[Load Average Explained](docs/LOAD_AVERAGE_EXPLAINED.md)**: Detailed explanation of system load average metric
-- **[Load Average Behavior](docs/LOAD_AVERAGE_BEHAVIOR.md)**: Why different time windows respond at different rates
-- **[Memory Retention Above 100%](docs/MEMORY_RETENTION_ABOVE_100.md)**: Explanation of why memory retention can exceed 100%
-- **[Results Analysis](docs/RESULTS_ANALYSIS.md)**: How to interpret and analyze demo results
 
 ### Installation
 

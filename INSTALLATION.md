@@ -138,7 +138,7 @@ pip install -r requirements.txt
 ### Model Download Issues
 
 **Slow downloads:**
-- Models are large (several GB each)
+- Models are large (several GB)
 - Download speed depends on internet connection
 - Be patient, downloads can take 10-30 minutes
 

@@ -33,6 +33,14 @@ python3 scripts/visualize_memory_qos.py --metrics-file "$LATEST_CSV"
 
 This generates a comprehensive visualization showing all metrics across the four phases.
 
+### Sample Output
+
+The visualization generates a comprehensive dashboard showing memory QoS effectiveness:
+
+![Memory QoS Demonstration Results](logs/memory_qos_comprehensive_memory_qos_metrics_20251208_131202.png)
+
+*Example visualization showing memory availability, retention, CPU usage, and other key metrics across all four phases.*
+
 ## What This Demo Shows
 
 **Memory QoS Protection**: CPU stays responsive and memory availability is maintained even under heavy AI loads.
@@ -117,12 +125,12 @@ See [Troubleshooting Guide](docs/troubleshooting.md) for more details.
 
 ## Contributing
 
-This is an internal project. For questions or improvements, contact the Strix Halo team.
+Contributions, issues, and feature requests are welcome! Feel free to check the existing issues or open a new one.
 
 ## Legal Notice
 
-This demo shows absolute performance characteristics of Strix Halo hardware. All measurements are taken on Strix Halo systems only. Reviewers may compare these results to their own experiences on other platforms, but this suite makes no direct comparisons or competitive claims.
+This demo shows absolute performance characteristics of the developer's Strix Halo hardware. All measurements are taken on Strix Halo systems only. This suite makes no direct comparisons or competitive claims.
 
 ## License
 
-Internal use only.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

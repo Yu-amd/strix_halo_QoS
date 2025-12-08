@@ -6,15 +6,15 @@ Common issues and solutions for Strix Halo QoS.
 
 ### Scripts Won't Run
 
-**Problem**: PowerShell scripts show execution policy errors.
+**Problem**: Scripts show permission errors.
 
 **Solution**:
-```powershell
-# Check execution policy
-Get-ExecutionPolicy
+```bash
+# Make scripts executable
+chmod +x scripts/*.sh
 
-# Set for current user (if allowed)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+# Run with explicit bash
+bash scripts/memory_qos_demo.sh --duration 600
 ```
 
 ### Logs Directory Not Created
@@ -22,9 +22,9 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 **Problem**: Scripts fail to create logs directory.
 
 **Solution**:
-```powershell
+```bash
 # Manually create logs directory
-New-Item -ItemType Directory -Path logs -Force
+mkdir -p logs
 ```
 
 ### Path Issues
@@ -34,25 +34,17 @@ New-Item -ItemType Directory -Path logs -Force
 **Solution**:
 - Ensure you're running scripts from the repository root
 - Use absolute paths if needed
-- Check file paths use correct separators (`\` for Windows, `/` for Linux)
+- Check file paths use forward slashes (`/`)
 
 ## Ollama Issues
 
 ### Ollama Not Found
 
-**Problem**: `ollama: command not found` or `ollama is not recognized`.
+**Problem**: `ollama: command not found`.
 
 **Solution**:
-```powershell
-# Windows: Check if Ollama is in PATH
-$env:PATH -split ';' | Select-String ollama
-
-# Add to PATH if needed (Windows)
-# Or reinstall Ollama and ensure "Add to PATH" is checked
-```
-
 ```bash
-# Linux: Check installation
+# Check installation
 which ollama
 
 # Reinstall if needed
@@ -64,20 +56,15 @@ curl -fsSL https://ollama.ai/install.sh | sh
 **Problem**: Ollama commands hang or fail to connect.
 
 **Solution**:
-```powershell
-# Windows: Check if Ollama is running
-Get-Process ollama
-
-# Start Ollama if not running
-ollama serve
-```
-
 ```bash
-# Linux: Check service
+# Check service
 systemctl status ollama
 
 # Start service
 sudo systemctl start ollama
+
+# Or run in foreground for debugging
+ollama serve
 ```
 
 ### Model Not Available
@@ -85,13 +72,12 @@ sudo systemctl start ollama
 **Problem**: Script reports model not found.
 
 **Solution**:
-```powershell
+```bash
 # List available models
 ollama list
 
-# Pull required models
+# Pull required model
 ollama pull codellama:7b
-ollama pull llama3:8b
 ```
 
 ### Model Download Fails
@@ -101,42 +87,32 @@ ollama pull llama3:8b
 **Solution**:
 - Check internet connection
 - Try again (may be temporary network issue)
-- Check available disk space
+- Check available disk space (models are several GB)
 - Verify Ollama has write permissions
 
 ## Python Issues
 
 ### Python Not Found
 
-**Problem**: `python: command not found`.
+**Problem**: `python3: command not found`.
 
 **Solution**:
-```powershell
-# Windows: Check Python installation
-python --version
-
-# Install if needed: winget install Python.Python.3.11
-# Or download from python.org
-```
-
 ```bash
-# Linux: Install Python
-sudo apt install python3 python3-pip
+# Install Python
+sudo apt install python3 python3-pip python3-venv
 ```
 
 ### Module Not Found
 
-**Problem**: `ModuleNotFoundError: No module named 'whisper'`.
+**Problem**: `ModuleNotFoundError: No module named 'psutil'` or similar.
 
 **Solution**:
-```powershell
+```bash
 # Install required packages
-pip install openai-whisper
-pip install psutil
-pip install requests
-
-# Or install from requirements.txt
 pip install -r requirements.txt
+
+# Or install individually
+pip install psutil matplotlib seaborn
 ```
 
 ### Virtual Environment Issues
@@ -147,8 +123,7 @@ pip install -r requirements.txt
 ```bash
 # Create and activate virtual environment
 python3 -m venv venv
-source venv/bin/activate  # Linux
-.\venv\Scripts\Activate.ps1  # Windows
+source venv/bin/activate
 
 # Install packages in venv
 pip install -r requirements.txt
@@ -161,16 +136,9 @@ pip install -r requirements.txt
 **Problem**: `cmake: command not found`.
 
 **Solution**:
-```powershell
-# Windows: Install with winget
-winget install Kitware.CMake
-
-# Or download from cmake.org
-```
-
 ```bash
-# Linux: Install with package manager
-sudo apt install cmake
+# Install with package manager
+sudo apt install cmake build-essential
 ```
 
 ### Compiler Not Found
@@ -178,14 +146,9 @@ sudo apt install cmake
 **Problem**: Build fails with "no compiler found".
 
 **Solution**:
-```powershell
-# Windows: Install Visual Studio Build Tools
-# Or install Visual Studio Community with C++ workload
-```
-
 ```bash
-# Linux: Install build essentials
-sudo apt install build-essential
+# Install build essentials
+sudo apt install build-essential gcc g++
 ```
 
 ### Build Fails
@@ -193,7 +156,7 @@ sudo apt install build-essential
 **Problem**: CMake configure or build fails.
 
 **Solution**:
-- Check compiler is available: `cl` (Windows) or `gcc` (Linux)
+- Check compiler is available: `gcc --version`
 - Verify project path is correct
 - Try clean build: delete `build` directory and reconfigure
 - Check error messages for specific issues
@@ -202,25 +165,27 @@ sudo apt install build-essential
 
 ### Results Below Target
 
-**Problem**: Performance retention below 85%.
+**Problem**: Memory retention below 85%.
 
 **Possible Causes**:
 1. Other applications running
 2. System thermal throttling
-3. Power plan not set to High Performance
+3. Power plan not set to performance mode
 4. Insufficient RAM
 5. Background processes
 
 **Solutions**:
-```powershell
+```bash
 # Check running processes
-Get-Process | Sort-Object CPU -Descending | Select-Object -First 10
-
-# Set power plan to High Performance
-powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+ps aux | sort -k3 -rn | head -10
 
 # Check available RAM
-Get-WmiObject Win32_ComputerSystem | Select-Object TotalPhysicalMemory
+free -h
+
+# Check CPU frequency
+cat /proc/cpuinfo | grep MHz
+
+# Close unnecessary applications
 ```
 
 ### System Becomes Unresponsive
@@ -228,11 +193,11 @@ Get-WmiObject Win32_ComputerSystem | Select-Object TotalPhysicalMemory
 **Problem**: System freezes or becomes very slow during demo.
 
 **Solutions**:
-- Reduce workload intensity (use `-QuickTest` flag)
+- Reduce demo duration (use shorter `--duration`)
 - Close other applications
 - Check system temperature
 - Ensure adequate cooling
-- Reduce number of concurrent processes
+- Check available RAM: `free -h`
 
 ### High CPU Usage
 
@@ -244,41 +209,7 @@ Get-WmiObject Win32_ComputerSystem | Select-Object TotalPhysicalMemory
 - Verify QoS is working (CPU should remain responsive)
 - Check if other processes are competing
 - Reduce LLM model size if needed
-- Use fewer iterations in quick test mode
-
-## Application-Specific Issues
-
-### Excel Not Available
-
-**Problem**: Office demo can't find or use Excel.
-
-**Solutions**:
-- Install Microsoft Office
-- Or use LibreOffice Calc (requires script modification)
-- Or manually test while script runs meeting assistant
-- Script will provide manual testing instructions
-
-### Video Editor Not Responding
-
-**Problem**: Video editor becomes slow or unresponsive.
-
-**Solutions**:
-- Ensure adequate RAM (32GB+ recommended)
-- Close other applications
-- Update GPU drivers
-- Reduce preview resolution
-- Check system temperature
-
-### VS Code Issues
-
-**Problem**: VS Code becomes laggy during developer demo.
-
-**Solutions**:
-- Close unnecessary extensions
-- Reduce workspace size
-- Check for extension conflicts
-- Restart VS Code
-- Verify system has adequate resources
+- Use shorter duration for testing
 
 ## Network Issues
 
@@ -297,10 +228,10 @@ Get-WmiObject Win32_ComputerSystem | Select-Object TotalPhysicalMemory
 **Problem**: Scripts can't connect to Ollama API.
 
 **Solutions**:
-- Verify Ollama service is running
+- Verify Ollama service is running: `systemctl status ollama`
 - Check firewall isn't blocking localhost
 - Verify Ollama is listening on correct port (default 11434)
-- Restart Ollama service
+- Restart Ollama service: `sudo systemctl restart ollama`
 
 ## Logging Issues
 
@@ -309,15 +240,15 @@ Get-WmiObject Win32_ComputerSystem | Select-Object TotalPhysicalMemory
 **Problem**: No log files in `logs/` directory.
 
 **Solutions**:
-```powershell
+```bash
 # Check if logs directory exists
-Test-Path logs
+ls -la logs/
 
 # Create if missing
-New-Item -ItemType Directory -Path logs -Force
+mkdir -p logs
 
 # Check write permissions
-Test-Path logs -IsValid
+touch logs/test.txt && rm logs/test.txt
 ```
 
 ### Log Files Empty
@@ -326,22 +257,11 @@ Test-Path logs -IsValid
 
 **Solutions**:
 - Check script execution completed
-- Verify Write-Log function is working
-- Check disk space
+- Verify script has write permissions
+- Check disk space: `df -h`
 - Verify file permissions
 
 ## Platform-Specific Issues
-
-### Windows-Specific
-
-**PowerShell Version**:
-- Requires PowerShell 5.1 or later
-- Check version: `$PSVersionTable.PSVersion`
-
-**COM Automation**:
-- Excel automation requires Excel to be installed
-- May require running as Administrator
-- Check COM permissions if issues occur
 
 ### Linux-Specific
 
@@ -362,11 +282,15 @@ sudo perf stat ...
 
 ### Collecting Debug Information
 
-Before asking for help, collect:
+Before opening an issue on GitHub, please collect:
 
 1. **System Information**:
-```powershell
-.\scripts\verify_setup.ps1 > debug_info.txt
+```bash
+uname -a > debug_info.txt
+python3 --version >> debug_info.txt
+ollama --version >> debug_info.txt
+free -h >> debug_info.txt
+df -h >> debug_info.txt
 ```
 
 2. **Error Messages**:
@@ -385,39 +309,36 @@ Before asking for help, collect:
 
 ### Common Error Messages
 
-**"Access Denied"**:
-- Run PowerShell as Administrator
-- Check file permissions
+**"Permission Denied"**:
+- Check file permissions: `chmod +x scripts/*.sh`
 - Verify antivirus isn't blocking
+- Check SELinux/apparmor if enabled
 
 **"Out of Memory"**:
 - Close other applications
-- Reduce workload size
-- Check available RAM
+- Reduce demo duration
+- Check available RAM: `free -h`
 
 **"Connection Refused"**:
-- Verify service is running (Ollama, etc.)
+- Verify Ollama service is running: `systemctl status ollama`
 - Check firewall settings
-- Verify port is not in use
+- Verify port is not in use: `netstat -tuln | grep 11434`
 
 ## Still Having Issues?
 
-1. Review relevant walkthrough guide:
-   - [Developer Demo Walkthrough](dev_qos_walkthrough.md)
-   - [Office Demo Walkthrough](office_qos_walkthrough.md)
-   - [Creator Demo Walkthrough](creator_qos_walkthrough.md)
-
-2. Check setup guides:
-   - [Windows Setup](../env/windows_setup.md)
+1. Review setup guides:
    - [Linux Setup](../env/linux_setup.md)
+   - [Installation Guide](../INSTALLATION.md)
 
-3. Verify all prerequisites are met:
-```powershell
-.\scripts\verify_setup.ps1
+2. Check all prerequisites are met:
+   - Ollama installed and running
+   - Python 3.8+ with required packages
+   - CMake and build tools installed
+   - Test project available
+
+3. Try a shorter test first:
+```bash
+./scripts/memory_qos_demo.sh --duration 60
 ```
 
-4. Try quick test mode first:
-```powershell
-.\scripts\dev_qos_demo.ps1 -QuickTest
-```
-
+4. Open an issue on GitHub with the debug information collected above.

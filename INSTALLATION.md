@@ -180,10 +180,10 @@ pip install -r requirements.txt
 - **CPU**: Modern multi-core processor
 - **GPU**: Optional, but helps with LLM inference
 
-## Support
+## Getting Help
 
 If you encounter issues:
 
 1. Check [Troubleshooting Guide](docs/troubleshooting.md)
 2. Review setup guide: [Linux Setup](env/linux_setup.md)
-3. Contact Strix Halo team for assistance
+3. Open an issue on GitHub for assistance

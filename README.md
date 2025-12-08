@@ -1,9 +1,5 @@
 # Strix Halo Memory QoS Demonstration
 
-A comprehensive demonstration showcasing Strix Halo's memory QoS (Quality of Service) capabilities in preventing CPU memory starvation under AI workloads.
-
-## Overview
-
 This demonstration shows how Strix Halo maintains system responsiveness and prevents CPU memory starvation when running intensive AI workloads alongside CPU-intensive tasks.
 
 ## Quick Start
@@ -38,10 +34,6 @@ This generates a comprehensive visualization showing all metrics across the four
 The visualization generates a comprehensive dashboard showing memory QoS effectiveness:
 
 ![Memory QoS Demonstration Results](demo_assets/sample_output.png)
-
-> **Note**: If the image doesn't display, copy your generated visualization from `logs/` to `docs/assets/sample_output.png` and commit it to the repository.
-
-*Example visualization showing memory availability, retention, CPU usage, and other key metrics across all four phases. The image is generated in the `logs/` directory after running the visualization script.*
 
 ## What This Demo Shows
 

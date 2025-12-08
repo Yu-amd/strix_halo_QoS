@@ -106,7 +106,6 @@ This is what enables the "always-on AI PC" experience - AI assistants that don't
 ### Installation
 
 - **[Installation Guide](INSTALLATION.md)**: Detailed installation instructions
-- **[Linux Setup](env/linux_setup.md)**: Linux-specific setup guide
 
 ## Troubleshooting
 

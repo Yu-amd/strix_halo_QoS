@@ -1,4 +1,4 @@
-# Strix Halo Memory QoS Demonstration
+# Strix Halo Memory QoS Demo
 
 This demonstration shows how Strix Halo maintains system responsiveness and prevents CPU memory starvation when running intensive AI workloads alongside CPU-intensive tasks.
 

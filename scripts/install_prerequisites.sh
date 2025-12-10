@@ -9,6 +9,7 @@ SKIP_PYTHON=false
 SKIP_BUILD_TOOLS=false
 SKIP_MODELS=false
 SKIP_OPTIONAL=false
+SKIP_TEST_PROJECTS=false
 INSTALL_OPTIONAL=false
 START_OLLAMA=false
 
@@ -40,6 +41,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --start-ollama)
             START_OLLAMA=true
+            shift
+            ;;
+        --skip-test-projects)
+            SKIP_TEST_PROJECTS=true
             shift
             ;;
         *)
@@ -571,7 +576,65 @@ if [ "$SKIP_MODELS" = false ]; then
     fi
 fi
 
-# 7. Verify Installations
+# 7. Prepare Test Projects
+if [ "$SKIP_TEST_PROJECTS" = false ]; then
+    step "Preparing Test Projects"
+    
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+    DEFAULT_PROJECT="json"
+    PROJECT_PATH="$REPO_ROOT/test-projects/$DEFAULT_PROJECT"
+    
+    # Check if project already exists and is properly configured
+    if [ -d "$PROJECT_PATH" ] && [ -f "$PROJECT_PATH/CMakeLists.txt" ] && [ -d "$PROJECT_PATH/build" ]; then
+        success "Test project already exists: $PROJECT_PATH"
+    elif [ -d "$PROJECT_PATH" ] && [ -f "$PROJECT_PATH/CMakeLists.txt" ]; then
+        # Project exists but build directory might be missing - configure it
+        echo "Configuring CMake build directory..."
+        cd "$PROJECT_PATH"
+        if cmake -B build -DCMAKE_BUILD_TYPE=Release > /dev/null 2>&1; then
+            success "Test project configured: $PROJECT_PATH"
+        else
+            warning "Failed to configure build directory"
+            echo "  You can configure manually: cd $PROJECT_PATH && cmake -B build"
+        fi
+        cd "$REPO_ROOT" > /dev/null
+    else
+        # Project doesn't exist - clone and configure it
+        echo "Preparing test project: $DEFAULT_PROJECT"
+        echo "This will clone and configure the project (may take a minute)..."
+        echo ""
+        
+        # Create test-projects directory
+        mkdir -p "$REPO_ROOT/test-projects"
+        
+        # Clone the project
+        if [ ! -d "$PROJECT_PATH" ]; then
+            echo "Cloning nlohmann/json..."
+            if git clone --depth 1 https://github.com/nlohmann/json.git "$PROJECT_PATH" > /dev/null 2>&1; then
+                success "Project cloned"
+            else
+                error "Failed to clone test project"
+                warning "You can prepare it manually: ./scripts/prepare_test_project.sh $DEFAULT_PROJECT"
+            fi
+        fi
+        
+        # Configure CMake if project exists
+        if [ -d "$PROJECT_PATH" ] && [ -f "$PROJECT_PATH/CMakeLists.txt" ]; then
+            echo "Configuring CMake build..."
+            cd "$PROJECT_PATH"
+            if cmake -B build -DCMAKE_BUILD_TYPE=Release > /dev/null 2>&1; then
+                success "Test project prepared: $PROJECT_PATH"
+            else
+                warning "Project cloned but CMake configuration failed"
+                echo "  You can configure manually: cd $PROJECT_PATH && cmake -B build"
+            fi
+            cd "$REPO_ROOT" > /dev/null
+        fi
+    fi
+fi
+
+# 8. Verify Installations
 step "Verification"
 
 ALL_GOOD=true
@@ -625,6 +688,24 @@ else
     warning "Compiler: Not found (required for Developer demo)"
 fi
 
+# Check Test Project
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+TEST_PROJECT_PATH="$REPO_ROOT/test-projects/json"
+if [ -d "$TEST_PROJECT_PATH" ] && [ -f "$TEST_PROJECT_PATH/CMakeLists.txt" ]; then
+    if [ -d "$TEST_PROJECT_PATH/build" ]; then
+        success "Test Project: OK ($TEST_PROJECT_PATH)"
+    else
+        warning "Test Project: Found but not configured (run: cd $TEST_PROJECT_PATH && cmake -B build)"
+    fi
+else
+    if [ "$SKIP_TEST_PROJECTS" = false ]; then
+        warning "Test Project: Not found (should have been prepared automatically)"
+    else
+        warning "Test Project: Skipped (use --skip-test-projects to suppress this warning)"
+    fi
+fi
+
 # Summary
 echo ""
 echo -e "${MAGENTA}=== Installation Summary ===${NC}"
@@ -644,10 +725,10 @@ if [ "$ALL_GOOD" = true ]; then
     
     echo "Next steps:"
     echo "  1. Run verification: ./scripts/verify_setup.sh"
-    echo "  2. Prepare demo assets:"
-    echo "     - Clone test project: git clone https://github.com/microsoft/terminal.git test-projects/terminal"
-    echo "     - Prepare video/audio files for Creator/Office demos (see README.md)"
-    echo "  3. Run a demo: ./scripts/dev_qos_demo.sh --quick-test"
+    echo "  2. Run the demo: ./scripts/memory_qos_demo.sh --duration 600"
+    echo "  3. Visualize results:"
+    echo "     LATEST_CSV=\$(ls -t logs/memory_qos_metrics_*.csv | head -1)"
+    echo "     python3 scripts/visualize_memory_qos.py --metrics-file \"\$LATEST_CSV\""
     echo ""
     echo "To install optional tools (VS Code, LibreOffice, perf), run:"
     echo "  ./scripts/install_prerequisites.sh --install-optional"

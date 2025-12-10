@@ -10,6 +10,7 @@ SKIP_BUILD_TOOLS=false
 SKIP_MODELS=false
 SKIP_OPTIONAL=false
 INSTALL_OPTIONAL=false
+START_OLLAMA=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -35,6 +36,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --install-optional)
             INSTALL_OPTIONAL=true
+            shift
+            ;;
+        --start-ollama)
+            START_OLLAMA=true
             shift
             ;;
         *)
@@ -66,6 +71,20 @@ warning() {
 
 error() {
     echo -e "${RED}✗${NC} $1"
+}
+
+# Check if Ollama server is running
+check_ollama_server() {
+    if command -v ollama &> /dev/null; then
+        # Try to list models - if server is running, this will succeed
+        if ollama list &> /dev/null; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        return 1
+    fi
 }
 
 # Check if running as root (for some installations)
@@ -103,6 +122,30 @@ if [ "$SKIP_OLLAMA" = false ]; then
     if command -v ollama &> /dev/null; then
         VERSION=$(ollama --version 2>&1)
         success "Ollama already installed: $VERSION"
+        
+        # Check if server is running
+        if check_ollama_server; then
+            success "Ollama server is running"
+        else
+            warning "Ollama server is not running"
+            if [ "$START_OLLAMA" = true ]; then
+                echo "Starting Ollama server in background..."
+                nohup ollama serve > /tmp/ollama.log 2>&1 &
+                sleep 2
+                if check_ollama_server; then
+                    success "Ollama server started successfully"
+                else
+                    error "Failed to start Ollama server"
+                    echo "  Try starting manually: ollama serve"
+                fi
+            else
+                echo "  To start the server, run one of:"
+                echo "    - ollama serve (foreground)"
+                echo "    - sudo systemctl start ollama (systemd service)"
+                echo "    - nohup ollama serve > /dev/null 2>&1 & (background)"
+                echo "  Or use --start-ollama flag to start automatically"
+            fi
+        fi
     else
         warning "Ollama not found. Installing..."
         
@@ -111,6 +154,9 @@ if [ "$SKIP_OLLAMA" = false ]; then
         
         if command -v ollama &> /dev/null; then
             success "Ollama installed successfully"
+            warning "Ollama server needs to be started before pulling models"
+            echo "  Start with: ollama serve"
+            echo "  Or as a service: sudo systemctl start ollama"
         else
             error "Ollama installation failed"
             warning "Please install manually: curl -fsSL https://ollama.ai/install.sh | sh"
@@ -470,18 +516,55 @@ if [ "$SKIP_MODELS" = false ]; then
     step "Installing LLM Models"
     
     if command -v ollama &> /dev/null; then
-        echo "Pulling required models (this may take a while)..."
-        echo ""
-        
-        MODELS=("codellama:7b")
-        for model in "${MODELS[@]}"; do
-            echo "Pulling $model..."
-            if ollama pull "$model"; then
-                success "$model installed"
+        # Check if server is running before attempting to pull models
+        if ! check_ollama_server; then
+            warning "Ollama server is not running. Cannot pull models."
+            if [ "$START_OLLAMA" = true ]; then
+                echo "Starting Ollama server in background..."
+                nohup ollama serve > /tmp/ollama.log 2>&1 &
+                sleep 2
+                if check_ollama_server; then
+                    success "Ollama server started successfully"
+                else
+                    error "Failed to start Ollama server"
+                    echo ""
+                    echo "To start the Ollama server manually, choose one:"
+                    echo "  1. Run in foreground: ollama serve"
+                    echo "  2. Run as systemd service: sudo systemctl start ollama"
+                    echo "  3. Run in background: nohup ollama serve > /dev/null 2>&1 &"
+                    echo ""
+                    echo "After starting the server, you can pull models manually:"
+                    echo "  ollama pull codellama:7b"
+                    exit 1
+                fi
             else
-                error "Failed to pull $model"
+                echo ""
+                echo "To start the Ollama server, choose one:"
+                echo "  1. Run in foreground: ollama serve"
+                echo "  2. Run as systemd service: sudo systemctl start ollama"
+                echo "  3. Run in background: nohup ollama serve > /dev/null 2>&1 &"
+                echo "  4. Use --start-ollama flag to start automatically"
+                echo ""
+                echo "After starting the server, you can pull models manually:"
+                echo "  ollama pull codellama:7b"
+                echo ""
+                echo "Or re-run this script with: ./scripts/install_prerequisites.sh --start-ollama"
             fi
-        done
+        else
+            echo "Pulling required models (this may take a while)..."
+            echo ""
+            
+            MODELS=("codellama:7b")
+            for model in "${MODELS[@]}"; do
+                echo "Pulling $model..."
+                if ollama pull "$model" 2>&1; then
+                    success "$model installed"
+                else
+                    error "Failed to pull $model"
+                    warning "Make sure Ollama server is running: ollama serve"
+                fi
+            done
+        fi
     else
         warning "Ollama not found. Install Ollama first, then run:"
         echo "  ollama pull codellama:7b"
